@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "eventproxy": "^0.3.4",
+    "express": "^4.14.0",
+    "superagent": "^2.1.0"
+  },
+  "name": "jv",
+  "version": "1.0.0",
+  "description": "nodejs train",
+  "main": "jv",
+  "devDependencies": {},
+  "scripts": {
+    "test": "jv"
+  },
+  "repository": {
+    "type": "git",
+    "url": "jv"
+  },
+  "keywords": [
+    "jv",
+    "node",
+    "js"
+  ],
+  "author": "jv",
+  "license": "MIT"
+}
