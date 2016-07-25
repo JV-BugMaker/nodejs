@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "async": "^2.0.1",
     "cheerio": "^0.20.0",
     "eventproxy": "^0.3.4",
     "express": "^4.14.0",
