@@ -4,13 +4,14 @@ function route(pathname,handle){
     //想办法去掉
     if(pathname == '/favicon.ico'){
       //todo
-        return;
+      //太鸡巴坑了  这个favicon 太操蛋了 真的是MDZZ 不返回 在write那边就会报错 真的是
+        return "not found favicon";
     }
     if(typeof handle[pathname] === "function"){
-        handle[pathname]();
-        console.log("About to router request "+ pathname);
+        return handle[pathname]();
     }else{
         console.log("can't not found handle ");
+        return "4O4 NOT FOUND";
     }
 }
 

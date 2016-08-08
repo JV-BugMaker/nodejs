@@ -13,10 +13,10 @@ app.use(express.static(path.join(__dirname, '/public')));
 
 function Start(route,handle){
     function onRequest(request,response){
-        var pathname = url.parse(request.url).pathname;
-        route(pathname,handle);
         response.writeHead(200,{"Content-type":"text/plain"});
-        response.write("hello world");
+        var pathname = url.parse(request.url).pathname;
+        var content = route(pathname,handle);
+        response.write(content);
         response.end();
     }
     http.createServer(onRequest).listen(8888);
