@@ -13,10 +13,16 @@ app.use(express.static(path.join(__dirname, '/public')));
 
 function Start(route,handle){
     function onRequest(request,response){
-        response.writeHead(200,{"Content-type":"text/plain"});
+        var postData = "";
         var pathname = url.parse(request.url).pathname;
-        route(pathname,handle,response);
-
+        request.setEncoding('utf-8');
+        request.addListener('data',function(postDataChunk){
+            postData += postDataChunk;
+            console.log('Received post data'+postData);
+        });
+        request.addListener('end',function(){
+            route(pathname,handle,response,postData);
+        });
     }
     http.createServer(onRequest).listen(8888);
 }

@@ -1,4 +1,4 @@
-function route(pathname,handle,response){
+function route(pathname,handle,response,postData){
     //丫的 调试的时候看到一个 找不到这个handle  我以为是那边出现问题
     //丫的  默认的Request for /favicon.icoreceived can't not found handle 这个好烦
     //想办法去掉
@@ -8,7 +8,7 @@ function route(pathname,handle,response){
         return "not found favicon";
     }
     if(typeof handle[pathname] === "function"){
-        return handle[pathname](response);
+        return handle[pathname](response,postData);
     }else{
         console.log("can't not found handle ");
         response.writeHead(404,{"Content-type":"text/plain"});
