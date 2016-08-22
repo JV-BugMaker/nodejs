@@ -5,7 +5,8 @@
 var fs = require('fs');
 var path = require('path');
 
-function travel(dir,callback){
+//同步版本
+function travelSync(dir,callback){
     fs.readdirSync(dir).forEach(function(file){
           var pathname = path.join(dir,file);
           //判断你是否是目录
@@ -18,6 +19,32 @@ function travel(dir,callback){
           }
     });
 }
+//异步版本实现读取目录
+function travel(dir,callback,finish){
+    fs.readdir(dir,function(err,files){
+        //闭包处理立即执行
+        (function next(i){
+            if(i < files.length){
+                var pathname = path.join(dir,files[i]);
+                fs.stat(pathname,function(err,stats){
+                    if(stats.isDirectory()){
+                        travel(pathname,callback,function(){
+                            next(i+1);
+                        });
+                    }else{
+                      callback(pathname, function () {
+                              next(i + 1);
+                      });
+                    }
+                });
+            }else{
+                finish && finish();
+            }
+
+        })(0);
+    });
+}
+
 
 travel('/usr/local',function(pathname){
     console.log(pathname);
