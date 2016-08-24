@@ -38,5 +38,100 @@ querystring.stringify({ foo: 'bar', baz: ['qux', 'quux'], corge: '' });
 'foo=bar&baz=qux&baz=quux&corge='
 */
 
+var http = require('http');
+var zlib = require('zlib');
+//数据压缩 解压  zlib gzip
+http.createServer(function(request,response){
+    var i = 1024,data ='';
+    while(i--){
+        data += '.';
+    }
+    //判断客户端是否支持gzip压缩
+    if((request.headers['accept-encoding']||'').indexOf('gzip')!==-1){
+        //response 数据进行压缩
+        zlib.gzip(data,function(err,data){
+              response.writeHead(200,{
+                  'Content-type':'text/plain',
+                  'Content-Encoding':'gzip'
+              });
+              response.end(data);
+        });
+    }else{
+        response.writeHead(200,{
+            'Content-type':'text/plain'
+        });
+        response.end(data);
+    }
+}).listen(80);
 
-//数据压缩 解压
+//使用zlib进行数据解压
+
+var options = {
+    'hostname':'gjw.web.com',
+    'port':80,
+    'path':'/',
+    'method':'GET',
+    'headers':{
+      'Accept-Encoding':'gzip,deflate'
+    }
+};
+
+http.request(options,function(response){
+    var body = [];
+    response.on('data',function(chunk){
+        body.push(chunk);
+    });
+
+    response.on('end',function(){
+        body = Buffer.concata(body);
+        //判断服务器的响应数据是否经过gzip压缩的
+        if(response.headers['Content-Encoding'] === 'gzip'){
+            zlib.gunzip(body,function(err,data){
+                  console.log(data.toString());
+            });
+        }else{
+            console.log(body.toString());
+        }
+    });
+});
+
+//net 模块可用于创建socket 服务器或者socket客户端  。
+var net = require('net');
+net.createServer(function(conn){
+    conn.on('data',function(data){
+        //每行添加上换行符
+        conn.write([
+          'HTTP/1.1 200',
+          'Content-type: text/plain',
+          'Content-length:11',
+          '',
+          'hello world'
+        ].join('\n'));
+    });
+}).listen(80);
+
+
+//使用socket搭建客户端请求
+
+var options = {
+    port:80,
+    host:'gjw.web.com'
+};
+var client = net.connect(options,function(){
+      //这边是connect 服务器 没有response
+      client.write([
+        'GET / HTTP/1.1',
+        'User-Agent:curl/7.26.0',
+        'Host:gjw.web.com',
+        'Accept:*/*',
+        '',
+        ''
+      ],join('\n'));
+      client.on('data',function(chunk){
+          console.log(chunk.toString());
+          client.end();
+      });
+});
+
+//但是全局客户端默认只允许5个并发Socket连接，当某一个时刻HTTP客户端请求创建过多，超过这个数字时，就会发生socket hang up错误。
+//通过http.globalAgent.maxSockets属性把这个数字改大些即可。另外，https模块遇到这个问题时也一样通过https.globalAgent.maxSockets属性来处理。
