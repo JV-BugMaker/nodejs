@@ -60,7 +60,7 @@ function main(argv){
 function parseURL(root,url){
     //处理url 为了一些特殊url进行处理
     var base, pathname,parts;
-    //首先处理url中带 替换
+    //首先处理url中带 替换 url中带 localhost:port/
     if(url.indexOf('??') === -1){
         url = url.replace('/','/??');
     }
