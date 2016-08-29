@@ -40,8 +40,9 @@ function main(argv){
     //读取配置文件  同步读取参数一   为了防止有为空的参数  设置一个默认值
     var config = JSON.parse(fs.readFileSync(argv[0],'UTF-8')),
         root = config.root || '.',
-        port = config.port || 80;
-    http.createServer(function(request,response){
+        port = config.port || 80,
+        server;
+    server = http.createServer(function(request,response){
         //从请求request中获取请求的路径参数 进行处理
         var urlInfo = parseURL(root,request.url);
         //不采用串行的文件读写方式 采用 边度编写方式
@@ -57,6 +58,11 @@ function main(argv){
             }
         });
     }).listen(port);
+    process.on('SIGTERM',function(){
+        server.close(function(){
+            process.exit(0);
+        });
+    });
 }
 function parseURL(root,url){
     //处理url 为了一些特殊url进行处理
@@ -83,6 +89,7 @@ function outputFile(pathname,writer){
     (function next(i,len){
         if(i<len){
             var reader = fs.createReadStream(pathanme[i]);
+            //通过管道方式进行
             reader.pipe(writer,{end:false});
             reader.on('end',function(){
                 next(i+1,len);
