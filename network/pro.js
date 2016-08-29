@@ -20,6 +20,7 @@ function combineFiles(pathnames,callback){
     (function next(i,len){
        if(i<len ){
          //异步读取文件
+        //正确的做法不是改用并行IO，而是一边读取文件一边输出响应，把响应输出时机提前至读取第一个文件的时刻
          fs.readFile(pathnames[i],function(err,data){
             if(err){
               callback(err);
@@ -43,7 +44,8 @@ function main(argv){
     http.createServer(function(request,response){
         //从请求request中获取请求的路径参数 进行处理
         var urlInfo = parseURL(root,request.url);
-        combineFiles(urlInfo.pathnames,function(err,data){
+        //不采用串行的文件读写方式 采用 边度编写方式
+        validateFiles(urlInfo.pathnames,function(err,pathname){
             if(err){
                 response.writeHead(404);
                 response.end(err.message);
@@ -51,9 +53,8 @@ function main(argv){
                 response.writeHead(200,{
                     'Content-type':urlInfo.mine
                 });
-                response.end(data);
+                outputFile(pathname,response);
             }
-
         });
     }).listen(port);
 }
@@ -75,4 +76,36 @@ function parseURL(root,url){
         mine:MIME[path.extname(pathnames[0])]||'text/plain',
         pathnames:pathnames
     };
+}
+
+//读取文件 输出文件内容
+function outputFile(pathname,writer){
+    (function next(i,len){
+        if(i<len){
+            var reader = fs.createReadStream(pathanme[i]);
+            reader.pipe(writer,{end:false});
+            reader.on('end',function(){
+                next(i+1,len);
+            });
+        }else{
+            writer.end();
+        }
+    })(0,pathname.length);
+}
+function validateFiles(pathnames, callback) {
+    (function next(i, len) {
+        if (i < len) {
+            fs.stat(pathnames[i], function (err, stats) {
+                if (err) {
+                    callback(err);
+                } else if (!stats.isFile()) {
+                    callback(new Error());
+                } else {
+                    next(i + 1, len);
+                }
+            });
+        } else {
+            callback(null, pathnames);
+        }
+    }(0, pathnames.length));
 }
