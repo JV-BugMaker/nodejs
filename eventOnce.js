@@ -69,3 +69,69 @@ trigger:function(eventName){
     }
     return this;
 }
+
+//eventproxy 异常处理
+
+//通过添加error事件来进行异常处理
+
+exports.getContent = function(callback){
+    var ep = new EventProxy();
+    ep.all('tpl','data',function(tpl,data){
+        //成功回调
+        callback(null,{
+            template:tpl,
+            data:data
+        });
+    });
+    //侦听错误事件
+    ep.bind('error',function(err){
+        ep.unbind();
+        //异常回调
+        callback(err);
+    });
+    fs.readFile('template.tpl','utf8',function(err,content){
+        if(err){
+            //错误处理
+            return ep.emit('error',err);
+        }
+        ep.emit('tpl',content);
+    });
+    db.get('some sql',function(err,result){
+        if(err){
+            return ep.emit('error',err);
+        }
+        ep.emit('data',result);
+    });
+}
+
+//实践优化模型
+exports.getContent = function(callback){
+    var ep = new EventProxy();
+    ep.all('tpl','data',function(tpl,data){
+        //成功回调
+        callback(null,{
+            template:tpl,
+            data:data
+        });
+    });
+    //侦听错误事件
+    ep.fail(callback);
+    //等价于
+    ep.fail(function(err){
+        callback(err);
+    });
+    //又等价于
+    ep.bind('error',function(err){
+        ep.unbind();
+        callback(err);
+    });
+    //done方法实现 
+    function(err,content){
+        if(err){
+            return ep.emit('error',err);
+        }
+        ep.emit('tpl',content);
+    }
+    fs.readFile('template.tpl','utf8',ep.done('tpl'));
+    db.get('some sql',ep.done('data'));
+}
