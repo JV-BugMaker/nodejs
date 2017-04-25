@@ -74,3 +74,31 @@ Promise.prototype.then = function(fulfilledHandler,errorHandler,progressHandler)
 }
 
 
+var readFile1 = function(file,encoding){
+    var deferred = new Deferred();
+    fs.readFile(file,encoding,deferred.callback());
+    return deferred.promise;
+}
+
+var readFile2 = function(file,encoding){
+    var deferred = new Deferred();
+    fs.readFile(file,encoding,deferred.callback());
+    return deferred.promise;
+}
+
+readFile1('f1.txt','utf-8').then(function(){
+    return readFile2(f1.trim(),'utf-8');
+}).then(function(file2){
+    console.log(file2);
+});
+
+
+var smooth = function(method){
+    return function(){
+        var deferred = new Deferred();
+        var args = Array.prototype.slice.call(arguments,0);
+        args.push(deferred.callback());
+        method.apply(null,args);
+        return deferred.promise;
+    }
+}
