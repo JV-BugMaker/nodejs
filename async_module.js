@@ -52,3 +52,53 @@ async.waterfall([
 });
 
 //waterfall 当前一个的结果是后一个调用的输入
+
+
+var deps = {
+    readConfig:function(callback){
+        //read config file 
+        callback();
+    },
+    connectMongoDB:['readConfig',function(callback){
+        //connect to mongodb 
+        callback(); 
+    }],
+    connectRedis:['readConfig',function(callback){
+        //connect to redis
+        callback();
+    }],
+    complieAsserts:function(callback){
+        callback();
+    },
+    uploadAsserts:['complieAsserts',function(callback){
+        callback();
+    }],
+    startUp:[
+        'connectMongoDB','connectRedis','uploadAsserts',function(callback){
+            //startup
+
+        }
+    ],
+};
+//auto 方法能够根据依赖关系自动分析  以最佳顺序执行以上业务
+async.auto();
+
+
+//转换EventProxy实现
+
+proxy.asap('readtheConfig',function(){
+    //read config file
+    proxy.emit('readConfig');
+}).on('readConfig',function(){
+    //connect to mongodb
+    proxy.emit('connectMongodb');
+}).on('readConfig',function(){
+    //connect to redis
+    proxy.emit('connectRedis');
+}).asap('complietheasserts',function(){
+    proxy.emit('complieAsserts');
+}).on('complieAsserts',function(){
+    proxy.emit('uploadAsserts');
+}).all('connectMongodb','connectRedis','uploadAsserts',function(){
+    //startup
+});
