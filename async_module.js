@@ -29,3 +29,26 @@ async.parallel([
 
 //异步并行调用 注入的回调函数 比较重要
 
+
+async.waterfall([
+    function(callback){
+        fs.readFile('file1.txt','utf-8',function(err,content){
+            //content是这次调用的结果
+            callback(err,content);
+        });
+    },
+    function(arg1,callback){
+        fs.readFile(arg1,'utf-8',function(err,content){
+            callback(err,content);
+        });
+    },
+    function(arg1,callback){
+        fs.readFile(arg1,'utf-8',function(err,content){
+            callback(err,content);
+        });
+    },
+],function(err,result){
+    //result => file4.txt
+});
+
+//waterfall 当前一个的结果是后一个调用的输入
