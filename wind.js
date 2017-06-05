@@ -41,8 +41,38 @@ var bubbleSort = eval(Wind.Async("async",function(array){
     for(var i = 0;i<array.length;i++){
         for(var j = 0;j<array.length-1 - i;i++){
             if(compare(array[j],array[i]) > 0){
+                //任务模型 实现等待完成异步方法 只是一个等待占位符 告之编译器这里需要等待
                 $await(swapAsync(array,j,j+1));
             }
         }
     }
+}));
+
+
+//Wind使用whenAll来并行处理
+
+var Wind = require("wind");
+var Task = Wind.Async.Task;
+
+var readFileAsync = function(file,encoding){
+    return Task.create(function(t){
+        fs.readFile(file,encoding,function(err,file){
+            if(err){
+                t.complete('failure',err);
+            }else{
+                t.complete('success',file);
+            }
+        });
+    });
+};
+
+
+var parallel = eval(Wind.compile('async',function(){
+    var result = $await(Task.whenAll({
+        file1:readFileAsync('file1.txt','utf-8'),
+        file2:readFileAsync('file2.txt','utf-8'),
+    }));
+
+    console.log(file1);
+    console.log(file2);
 }));
