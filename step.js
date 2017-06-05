@@ -6,6 +6,7 @@ Step(
         fs.readFile('file1.txt','utf-8',this);
     },
     function readFile2(err,content){
+        //如果上面方法存在异常错误，将会把err在这个函数第一个参数
         fs.readFile('file2.txt','utf-8',this);
     },
     function done(err,content){
@@ -27,3 +28,29 @@ Step(
         console.log(arguments);
     }
 );
+//使用parallel()方法注意 如果异步方法的结果是传回多个参数 ， step最多将只会取前面两个
+
+//结果分组
+
+Step(
+    function readDir(){
+        fs.readDir(__dirname,this);
+    },
+    function readFile(err,results){
+        if(err) throw err;
+
+        var group = this.group();
+        results.forEach(function(filename) {
+            if(/\.js$/.test(filename)){
+                fs.readFile(__dirname+"/"+filename,'utf-8',group());
+            }
+        }, this);
+    },
+    function showAll(err,files){
+        if(err) throw err;
+        console.log(files);
+    }
+);
+//第一次调用时告知step要并行执行，第二次调用是将结果生成一个回调函数，而回调函数接受的返回值将会按组存储
+//function(err,result1,result2,result3...){}
+//function(err,results){}
