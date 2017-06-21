@@ -9,6 +9,7 @@ var server = net.createServer(function(socket){
     //新的连接
     socket.on('data',function(data){
         socket.write("你好");
+        socket.pipe(socket);
     });
 
     socket.on('end',function(){
