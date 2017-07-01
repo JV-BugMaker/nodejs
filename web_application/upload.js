@@ -68,3 +68,29 @@ var handle = function(req,res){
         }
     }
 }
+
+
+//对于文件上传的大小限制
+var bytes = 1024;
+
+function (req,res){
+    var received = 0,
+    var len = req.headers['content-length'] ? parseInt(req.headers['content-length'],10) : null;
+
+    //如果内容超过长度限制 就直接返回400
+    if(len && len > bytes){
+        res.writeHead(413);
+        res.end();
+        return;
+    }
+    //limit
+    req.on('data',function(chunk){
+        received += chunk;
+        if(received > bytes){
+            //停止接收数据
+            req.destory();
+        }
+    });
+
+    handle();
+}
