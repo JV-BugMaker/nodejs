@@ -37,3 +37,25 @@ var handle = function(req,res){
         }
     });
 }
+
+//Expires
+var handle = function(req,res){
+    fs.readFile(filename,function(err,file){
+        var expires = new Date();
+        expires.setTime(expires.getTime() + 10 * 365 * 24 *60 * 60 * 1000);
+        res.setHeader('Expires',expires.toUTCString());
+        res.writedHead(200,'ok');
+        res.end(file);
+    });
+};
+
+//Cache-Control
+
+var handle = function(req,res){
+    fs.readFile(filename,function(err,file){
+        res.setHeader("Cache-Contrl","max-age=" + 10 * 365 * 24 *60 * 60 * 1000);
+        res.writedHead(200,'ok');
+        res.end(file);
+    });
+}
+
