@@ -16,9 +16,14 @@ var createWorker = function(){
     worker.on('exit',function(){
         console.log('worker' + worker.pid + 'exited.');
         delete workers[worker.pid]; //删除资源
-        createWorker();
+        // createWorker();
     });
-
+    //message 接收是否是自杀信号
+    worker.on('message',function(message){
+        if(message.act == 'suicide'){
+            createWorker();
+        }
+    });
     //句柄转发
     worker.send('server',server);
     workers[worker.pid] = worker;
@@ -61,4 +66,18 @@ process.on('uncaughtException',function(){
         //所有连接已有连接断开后 退出进程
         process.exit(1);
     });
+});
+
+//收到异常错误的时候  向master进程发送 信号 停止接收新的进程 master 进程接收到信号之后 停止转发句柄和新建进程
+process.on('uncaughtException',function(){
+    process.send({act:'suicide'});
+    //停止接收新的连接
+    worker.close(function(){
+        //所有连接已有连接断开后 退出进程
+        process.exit(1);
+    });
+    //设置超时时间 避免长连接引起问题
+    setTimeout(function() {
+        process.exit(1);
+    }, 5000);
 });
